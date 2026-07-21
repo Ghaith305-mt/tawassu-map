@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مخطط التوسع في المملكة العربية السعودية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eeece6;
+    --panel:#ffffff;
+    --ink:#1f2a52;
+    --ink-soft:#6b6455;
+    --line:#ded7c4;
+    --paper:#ffffff;
+    --paper-hover:#f2f2f0;
+    --accent:#2541b2;
+    --accent-soft:#2541b222;
+    --shadow:0 24px 50px rgba(31,42,82,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, #f7f5f0, var(--bg) 60%);
+    color:var(--ink);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px;
+  }
+  .eyebrow{
+    font-family:'Cairo', sans-serif;font-size:12px;letter-spacing:.14em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:10px;
+    transition:color .2s;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block;transition:background .2s;}
+  h1{font-family:'Cairo', sans-serif;font-weight:900;font-size:clamp(26px,4vw,40px);margin:0;letter-spacing:.01em;}
+  h1 span{color:var(--accent);transition:color .2s;}
+  .sub{font-size:14px;color:var(--ink-soft);margin-top:8px;max-width:560px;line-height:1.7;}
+  .sync-status{
+    font-family:'Cairo';font-size:11.5px;font-weight:700;color:var(--ink-soft);
+    margin-top:10px;display:inline-flex;align-items:center;gap:6px;
+    background:#f6f2ea;border:1px solid var(--line);border-radius:999px;padding:5px 12px;
+    transition:.2s;
+  }
+  .sync-status.ok{color:#2f6b4f;background:#eaf3ee;border-color:#cfe4d8;}
+  .sync-status.err{color:#8a2e42;background:#f6e9ec;border-color:#e3c3cc;}
+
+  /* --- layout: map fixed right-to-left as: map LEFT, panel RIGHT --- */
+  .stage{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media (max-width:860px){
+    .stage{grid-template-columns:1fr;}
+    .panel{order:2;}
+    .map-card{order:1;}
+  }
+
+  .map-card{
+    position:relative;background:#ffffff;border:1px solid var(--line);
+    border-radius:18px;box-shadow:var(--shadow);padding:14px;
+  }
+  svg#map{width:100%;height:auto;display:block;}
+  .map-svg-wrap{position:relative;}
+  .region{cursor:pointer;transition:filter .15s ease;}
+  .region:hover .fill{filter:brightness(0.94);}
+  .region.selected .fill{stroke:var(--ink);stroke-width:3;}
+  .region .fill{fill:var(--paper);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round;transition:fill .2s, stroke .15s;}
+
+  .label-ar{font-family:'Cairo';font-weight:700;fill:var(--ink);text-anchor:middle;pointer-events:none;}
+  .region.colored .label-ar{fill:#fff8ec;paint-order:stroke;stroke:rgba(0,0,0,0.35);stroke-width:2px;}
+  .region.selected .label-ar{font-weight:800;}
+  .cap-dot{fill:#fff;stroke:var(--ink);stroke-width:1;}
+  .branch-badge circle{fill:var(--ink);stroke:#fff;stroke-width:1.4;}
+  .region.colored .branch-badge circle{fill:#1f2a52;}
+  .branch-badge text{fill:#fff;font-family:'Cairo';font-weight:800;text-anchor:middle;pointer-events:none;}
+
+  .legend{display:flex;gap:16px;padding:12px 4px 2px;font-size:11.5px;color:var(--ink-soft);flex-wrap:wrap;align-items:center;}
+  .legend b{color:var(--ink);font-family:'Cairo';}
+  .color-key{display:flex;gap:14px;flex-wrap:wrap;margin-inline-start:auto;}
+  .color-key span{display:flex;align-items:center;gap:5px;}
+  .color-key i{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .color-key .cname{
+    cursor:text;border-bottom:1px dashed transparent;transition:border-color .15s;
+  }
+  .color-key .cname:hover{border-color:var(--ink-soft);}
+  .color-key .cname:focus{outline:none;border-color:var(--ink);background:#fbfaf6;}
+
+  .goal-ring{
+    position:absolute;
+    right:22px;
+    top:22px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:10px 14px 10px 10px;
+    box-shadow:0 10px 24px rgba(31,42,82,0.14);
+    z-index:5;
+  }
+  .goal-ring .goal-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
+  .goal-ring svg{width:64px;height:64px;display:block;}
+  .goal-ring .track{fill:none;stroke:#eee7d6;stroke-width:7;}
+  .goal-ring .progress{
+    fill:none;stroke:#a9762c;stroke-width:7;stroke-linecap:round;
+    transition:stroke-dashoffset .5s ease;
+  }
+  .goal-ring .goal-center{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Cairo';font-weight:800;font-size:14px;color:var(--ink);
+  }
+  .goal-ring .goal-info{font-size:11px;color:var(--ink-soft);line-height:1.6;}
+  .goal-ring .goal-info b{display:block;font-family:'Cairo';font-size:12px;color:var(--ink);margin-bottom:2px;}
+  .goal-ring .goal-target{
+    cursor:text;border-bottom:1px dashed var(--ink-soft);font-weight:800;color:var(--accent);
+    padding:0 2px;
+  }
+  .goal-ring .goal-target:focus{outline:none;background:#faf6ea;}
+  @media (max-width:640px){ .goal-ring{position:static;margin-top:14px;} }
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;min-height:460px;max-height:660px;overflow-y:auto;}
+  .panel::-webkit-scrollbar{width:6px;}
+  .panel::-webkit-scrollbar-thumb{background:#cbb98f;border-radius:6px;}
+  .panel h2{font-family:'Cairo';font-size:17px;color:var(--accent);margin:0 0 4px;transition:color .2s;}
+  .panel .hint{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:6px;}
+
+  /* color picker, matching sketch's "اختيار اللون" */
+  .color-picker{margin:16px 0 18px;padding-top:14px;border-top:1px solid var(--line);}
+  .color-picker .cp-label{font-family:'Cairo';font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:10px;display:block;}
+  .branch-counter{display:flex;align-items:center;gap:10px;margin-top:14px;}
+  .branch-counter .cp-label{margin-bottom:0;}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;}
+  .stepper button{
+    width:30px;height:30px;border:none;background:#fff;color:var(--ink);font-size:16px;
+    cursor:pointer;font-family:'Cairo';transition:background .15s;
+  }
+  .stepper button:hover{background:var(--paper-hover);}
+  .stepper .bcount{
+    width:38px;text-align:center;font-family:'Cairo';font-weight:800;font-size:14px;color:var(--ink);
+    border-inline:1px solid var(--line);
+  }
+  .swatches{display:flex;gap:10px;}
+  .swatch{
+    width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid #fff;
+    box-shadow:0 0 0 1.5px var(--line);transition:transform .15s, box-shadow .15s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .swatch:hover{transform:translateY(-2px);}
+  .swatch.active{box-shadow:0 0 0 2px #fff, 0 0 0 3.5px var(--ink);}
+  .swatch.none{background:#fff !important;color:#9a927e;font-size:14px;line-height:1;}
+
+  .empty-state{text-align:center;padding:50px 10px 20px;color:var(--ink-soft);}
+  .empty-state svg{width:48px;height:48px;opacity:.4;margin-bottom:14px;}
+  .empty-state p{font-size:13px;line-height:1.8;}
+
+  .region-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;cursor:pointer;transition:.2s;margin-bottom:3px;}
+  .region-row:hover{background:var(--paper-hover);}
+  .region-row .name{font-family:'Cairo';font-weight:700;font-size:13.5px;}
+  .region-row .count{font-size:11px;color:var(--ink-soft);background:#f1ede4;padding:2px 9px;border-radius:999px;}
+
+  .gov-block{border-top:1px solid var(--line);margin-top:14px;padding-top:14px;}
+  .gov-block h3{font-family:'Cairo';font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px;}
+  .gov-block h3::before{content:"";width:7px;height:7px;background:var(--accent);border-radius:50%;display:inline-block;transition:background .2s;}
+  .gov-list{display:flex;flex-wrap:wrap;gap:7px;}
+  .gov-chip{
+    font-size:12.5px;background:var(--accent-soft);border:1px solid var(--line);padding:6px 12px;
+    border-radius:8px;color:var(--ink);cursor:pointer;transition:.15s;
+  }
+  .gov-chip:hover{border-color:var(--accent);}
+  .gov-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .gov-detail{
+    margin-top:12px;background:var(--paper-hover);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;
+  }
+  .gov-detail h4{font-family:'Cairo';font-size:14px;margin:0 0 10px;color:var(--ink);}
+  .gov-stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px;}
+  .gov-stat .gs-label{font-size:11px;color:var(--ink-soft);margin-bottom:2px;}
+  .gov-stat .gs-value{font-family:'Cairo';font-weight:800;font-size:15px;color:var(--ink);}
+  .gov-detail .bp-link{margin-top:2px;}
+  .gov-detail .no-data{font-size:11.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:10px;}
+  .gov-hyper-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .gov-hyper-row .ghr-label{font-size:12px;color:var(--ink);}
+  .gov-hyper-row .ghr-label small{display:block;font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
+  .gov-mini-row{font-size:11.5px;color:var(--ink-soft);margin:8px 0 4px;}
+  .gov-plan-heading{font-family:'Cairo';font-weight:800;font-size:13px;color:var(--ink);margin:18px 0 10px;padding-top:14px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:6px;}
+  .gov-plan-total{font-size:11px;color:var(--ink-soft);margin-bottom:10px;}
+  .gov-plan-total b{color:var(--accent);font-family:'Cairo';}
+
+  .back-link{display:inline-flex;align-items:center;gap:4px;font-family:'Cairo';font-weight:700;font-size:13px;color:var(--accent);cursor:pointer;margin-top:16px;transition:color .2s;}
+  .print-report-btn{
+    display:block;width:100%;margin-top:14px;padding:10px 14px;background:var(--ink);color:#fff;
+    border:none;border-radius:10px;font-family:'Cairo';font-weight:700;font-size:13.5px;cursor:pointer;
+    transition:.15s;
+  }
+  .print-report-btn:hover{background:var(--accent);}
+
+  #printReportArea{ display:none; }
+  #printReportArea.active{
+    display:block; position:fixed; inset:0; z-index:9999; background:#fff; overflow-y:auto;
+    padding:70px 24px 40px; direction:rtl; font-family:'Segoe UI', Tahoma, Arial, sans-serif; color:#1a1a1a;
+  }
+  .print-modal-bar{
+    position:fixed; top:0; right:0; left:0; z-index:10000; background:#1a1a1a; padding:12px 20px;
+    display:flex; gap:10px; justify-content:flex-end; align-items:center;
+  }
+  .print-modal-bar button{
+    font-family:'Cairo'; font-weight:700; font-size:13.5px; border:none; border-radius:8px;
+    padding:9px 16px; cursor:pointer;
+  }
+  .print-modal-bar .do-print{ background:var(--accent,#2541b2); color:#fff; }
+  .print-modal-bar .do-close{ background:#eee; color:#333; }
+
+  @media print {
+    body:not(.printing-report) #printReportArea{ display:none !important; }
+    body.printing-report > *:not(#printReportArea){ display:none !important; }
+    .print-modal-bar{ display:none !important; }
+    @page { size: A4 landscape; margin: 14mm; }
+  }
+  #printReportArea .header{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #2541b2; padding-bottom:12px; margin-bottom:18px; }
+  #printReportArea .header h1{ margin:0; font-size:26px; color:#2541b2; }
+  #printReportArea .header p{ margin:4px 0 0; font-size:13px; color:#666; }
+  #printReportArea .meta{ font-size:13px; color:#444; text-align:left; }
+  #printReportArea .summary{ display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
+  #printReportArea .summary .card{ flex:1; min-width:130px; background:#f5f6fa; border:1px solid #e1e3ea; border-radius:10px; padding:10px 14px; }
+  #printReportArea .summary .card .lbl{ font-size:11.5px; color:#777; margin-bottom:4px; }
+  #printReportArea .summary .card .val{ font-size:19px; font-weight:800; color:#1a1a1a; }
+  #printReportArea table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  #printReportArea th, #printReportArea td{ border:1px solid #d8dae0; padding:7px 8px; text-align:center; }
+  #printReportArea th{ background:#2541b2; color:#fff; font-weight:700; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #printReportArea tr:nth-child(even) td{ background:#f8f9fb; }
+  #printReportArea tfoot td{ background:#eef0f8; font-weight:800; border-top:2px solid #2541b2; }
+  #printReportArea .note{ margin-top:14px; font-size:11px; color:#888; }
+
+  .bottom-panel{
+    margin-top:22px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:0;
+    max-height:0;
+    opacity:0;
+    overflow:hidden;
+    transition:max-height .35s ease, opacity .3s ease, padding .35s ease, margin .35s ease;
+  }
+  .bottom-panel.show{
+    max-height:520px;
+    opacity:1;
+    padding:26px 30px;
+  }
+  .bp-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .bp-head h2{font-family:'Cairo';font-weight:800;font-size:19px;margin:0;color:var(--ink);}
+  .bp-head .bp-sub{font-size:12px;color:var(--ink-soft);}
+  .bp-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:640px){.bp-grid{grid-template-columns:1fr;}}
+  .bp-card{
+    background:var(--paper-hover);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .bp-card .bp-icon{
+    width:44px;height:44px;border-radius:12px;background:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    font-size:20px;border:1px solid var(--line);
+  }
+  .bp-card .bp-label{font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .bp-card .bp-value{font-family:'Cairo';font-weight:800;font-size:20px;color:var(--ink);}
+  .bp-card .bp-value small{font-family:'Tajawal';font-weight:400;font-size:12px;color:var(--ink-soft);}
+  .bp-note{font-size:11px;color:var(--ink-soft);margin-top:14px;line-height:1.7;}
+  .bp-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .bp-link{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'Cairo';font-weight:700;font-size:12.5px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:9px 14px;text-decoration:none;transition:.15s;
+  }
+  .bp-link:hover{border-color:var(--accent);color:var(--accent);}
+  .bp-link .arrow{font-size:13px;}
+
+  footer{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:30px;opacity:.75;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-block">
+      <div class="eyebrow" id="eyebrow">مخطط أولي</div>
+      <h1>مخطط <span id="titleSpan">التوسع في المملكة العربية السعودية</span></h1>
+      <p class="sub">اضغط على أي منطقة لعرض محافظاتها، واختر لها لونًا من الألوان الستة — يبقى ثابتًا حتى تقسّم كل مناطق الخريطة.</p>
+      <div class="sync-status" id="syncStatus">🔄 جارٍ تحميل البيانات المشتركة...</div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="panel" id="panel"></div>
+
+    <div class="map-card">
+      <div class="map-svg-wrap">
+        <svg id="map" viewBox="0 0 700 587" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="coastClip">
+            <path d="M 203.4,447.5 C 193.9,434.7 178.8,432.1 171.1,425.0 C 163.3,417.9 161.0,414.7 156.9,405.1 C 152.8,395.5 147.2,375.6 146.7,367.3 C 146.2,359.0 155.1,363.1 153.9,355.2 C 152.7,347.2 143.4,328.2 139.7,319.6 C 136.0,311.1 137.2,309.0 131.6,303.9 C 126.0,298.8 110.9,293.1 106.0,289.0 C 101.1,284.9 104.0,282.9 102.2,279.5 C 100.5,276.1 96.1,272.2 95.5,268.5 C 94.9,264.8 107.3,275.9 98.7,257.0 C 90.1,238.1 56.0,172.4 43.8,155.3 C 31.6,138.2 27.0,159.5 25.5,154.6 C 24.0,149.7 32.6,133.5 34.9,126.1 C 37.2,118.7 33.2,111.7 39.5,110.4 C 45.8,109.1 63.4,120.5 72.6,118.3 C 81.8,116.1 87.5,101.1 94.7,97.1 C 102.0,93.1 109.8,97.5 116.1,94.3 C 122.4,91.1 134.2,86.7 132.3,78.0 C 130.4,69.3 104.2,49.4 104.7,42.3 C 105.2,35.2 124.3,38.4 135.2,35.5 C 146.0,32.6 158.2,25.4 169.8,25.0 C 181.4,24.6 190.6,26.4 204.5,32.9 C 218.4,39.4 232.2,47.8 253.0,63.7 C 273.8,79.6 307.8,116.9 329.1,128.3 C 350.4,139.8 367.1,131.4 380.7,132.4 C 394.3,133.4 404.4,131.7 410.6,134.6 C 416.8,137.5 412.9,147.6 417.9,150.1 C 422.9,152.6 434.6,144.3 440.8,149.3 C 447.0,154.3 450.8,174.8 455.0,180.3 C 459.2,185.8 463.6,179.8 466.2,182.3 C 468.8,184.8 466.0,190.8 470.7,195.5 C 475.4,200.2 491.4,208.1 494.6,210.5 C 497.8,212.9 489.3,206.9 489.7,209.8 C 490.1,212.7 496.1,223.9 497.1,227.7 C 498.1,231.4 496.6,232.1 495.5,232.3 C 494.4,232.5 486.9,222.0 490.2,229.0 C 493.5,236.0 510.0,265.5 515.5,274.2 C 521.0,282.9 519.8,280.3 523.3,281.1 C 526.8,281.9 534.6,277.7 536.2,279.1 C 537.8,280.5 532.1,287.8 533.1,289.7 C 534.1,291.6 535.3,283.5 542.2,290.8 C 549.1,298.1 555.2,325.9 574.7,333.6 C 594.2,341.3 642.2,332.6 658.9,337.1 C 675.6,341.6 675.1,345.3 675.0,360.8 C 674.9,376.3 676.9,412.1 658.2,430.1 C 639.5,448.1 594.6,459.7 563.0,469.0 C 531.4,478.3 488.8,480.7 468.4,486.1 C 448.0,491.5 448.9,492.7 440.4,501.2 C 431.9,509.7 423.5,530.5 417.2,537.3 C 410.9,544.1 406.2,543.0 402.3,542.0 C 398.4,541.0 411.8,534.0 393.7,531.3 C 375.6,528.6 312.2,527.1 294.0,525.9 C 275.8,524.7 287.1,523.7 284.5,524.3 C 281.9,524.9 279.6,525.0 278.6,529.6 C 277.6,534.2 280.5,546.7 278.4,552.1 C 276.3,557.5 270.7,566.3 266.1,561.8 C 261.5,557.3 257.0,534.9 250.7,524.9 C 244.4,514.9 236.2,514.9 228.3,502.0 C 220.4,489.1 212.9,460.3 203.4,447.5 Z"/>
+          </clipPath>
+          <filter id="mapShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2a52" flood-opacity="0.16"/>
+          </filter>
+        </defs>
+
+        <g filter="url(#mapShadow)">
+          <g clip-path="url(#coastClip)" id="regions-layer"></g>
+          <path d="M 203.4,447.5 C 193.9,434.7 178.8,432.1 171.1,425.0 C 163.3,417.9 161.0,414.7 156.9,405.1 C 152.8,395.5 147.2,375.6 146.7,367.3 C 146.2,359.0 155.1,363.1 153.9,355.2 C 152.7,347.2 143.4,328.2 139.7,319.6 C 136.0,311.1 137.2,309.0 131.6,303.9 C 126.0,298.8 110.9,293.1 106.0,289.0 C 101.1,284.9 104.0,282.9 102.2,279.5 C 100.5,276.1 96.1,272.2 95.5,268.5 C 94.9,264.8 107.3,275.9 98.7,257.0 C 90.1,238.1 56.0,172.4 43.8,155.3 C 31.6,138.2 27.0,159.5 25.5,154.6 C 24.0,149.7 32.6,133.5 34.9,126.1 C 37.2,118.7 33.2,111.7 39.5,110.4 C 45.8,109.1 63.4,120.5 72.6,118.3 C 81.8,116.1 87.5,101.1 94.7,97.1 C 102.0,93.1 109.8,97.5 116.1,94.3 C 122.4,91.1 134.2,86.7 132.3,78.0 C 130.4,69.3 104.2,49.4 104.7,42.3 C 105.2,35.2 124.3,38.4 135.2,35.5 C 146.0,32.6 158.2,25.4 169.8,25.0 C 181.4,24.6 190.6,26.4 204.5,32.9 C 218.4,39.4 232.2,47.8 253.0,63.7 C 273.8,79.6 307.8,116.9 329.1,128.3 C 350.4,139.8 367.1,131.4 380.7,132.4 C 394.3,133.4 404.4,131.7 410.6,134.6 C 416.8,137.5 412.9,147.6 417.9,150.1 C 422.9,152.6 434.6,144.3 440.8,149.3 C 447.0,154.3 450.8,174.8 455.0,180.3 C 459.2,185.8 463.6,179.8 466.2,182.3 C 468.8,184.8 466.0,190.8 470.7,195.5 C 475.4,200.2 491.4,208.1 494.6,210.5 C 497.8,212.9 489.3,206.9 489.7,209.8 C 490.1,212.7 496.1,223.9 497.1,227.7 C 498.1,231.4 496.6,232.1 495.5,232.3 C 494.4,232.5 486.9,222.0 490.2,229.0 C 493.5,236.0 510.0,265.5 515.5,274.2 C 521.0,282.9 519.8,280.3 523.3,281.1 C 526.8,281.9 534.6,277.7 536.2,279.1 C 537.8,280.5 532.1,287.8 533.1,289.7 C 534.1,291.6 535.3,283.5 542.2,290.8 C 549.1,298.1 555.2,325.9 574.7,333.6 C 594.2,341.3 642.2,332.6 658.9,337.1 C 675.6,341.6 675.1,345.3 675.0,360.8 C 674.9,376.3 676.9,412.1 658.2,430.1 C 639.5,448.1 594.6,459.7 563.0,469.0 C 531.4,478.3 488.8,480.7 468.4,486.1 C 448.0,491.5 448.9,492.7 440.4,501.2 C 431.9,509.7 423.5,530.5 417.2,537.3 C 410.9,544.1 406.2,543.0 402.3,542.0 C 398.4,541.0 411.8,534.0 393.7,531.3 C 375.6,528.6 312.2,527.1 294.0,525.9 C 275.8,524.7 287.1,523.7 284.5,524.3 C 281.9,524.9 279.6,525.0 278.6,529.6 C 277.6,534.2 280.5,546.7 278.4,552.1 C 276.3,557.5 270.7,566.3 266.1,561.8 C 261.5,557.3 257.0,534.9 250.7,524.9 C 244.4,514.9 236.2,514.9 228.3,502.0 C 220.4,489.1 212.9,460.3 203.4,447.5 Z" fill="none" stroke="var(--ink)" stroke-width="2.6"/>
+        </g>
+      </svg>
+
+      <div class="goal-ring" id="goalRing">
+        <div class="goal-wrap">
+          <svg viewBox="0 0 64 64">
+            <circle class="track" cx="32" cy="32" r="27"/>
+            <circle class="progress" id="goalProgress" cx="32" cy="32" r="27" transform="rotate(-90 32 32)"/>
+          </svg>
+          <div class="goal-center" id="goalPercent">0%</div>
+        </div>
+        <div class="goal-info">
+          <b id="goalTotal">0 فرع</b>
+          الهدف: <span class="goal-target" id="goalTarget" contenteditable="true" spellcheck="false" title="اضغط لتعديل الهدف">50</span> فرع
+        </div>
+      </div>
+      </div>
+
+      <div class="legend">
+        <span><b>13</b> منطقة إدارية</span>
+        <span>·</span>
+        <span id="legend-govs"><b>—</b> محافظة</span>
+        <span>·</span>
+        <span id="legend-branches"><b>0</b> فرع</span>
+        <div class="color-key" id="colorKey"></div>
+      </div>
+      <div class="legend" id="legendPlanTypes" style="padding-top:4px;">
+        <span>🛒 <b id="legend-hyper">0</b> هايبر</span>
+        <span>·</span>
+        <span>🏪 <b id="legend-super">0</b> سوبر</span>
+        <span>·</span>
+        <span>🏬 <b id="legend-mini">0</b> ميني ماركت</span>
+        <span>·</span>
+        <span>🛍️ <b id="legend-bakala">0</b> بقالة</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-panel" id="bottomPanel"></div>
+
+  <footer>حدود جغرافية حقيقية مبسّطة · اضغط على أي منطقة لعرض تفاصيلها · الأسعار تقديرية لأغراض التخطيط الأولي وليست تقييمًا رسميًا</footer>
+</div>
+
+<script>
+const REGIONS = [
+  {id:'tabuk', name:'تبوك', capital:'تبوك', priceMin:2000, priceMax:5000, label:[168.2,202.8],
+   points:'158.2,158.9 127.0,153.0 121.0,133.0 112.4,142.1 84.0,141.0 65.6,125.2 34.9,126.1 25.5,154.6 43.8,155.3 98.7,257.0 95.5,268.5 102.2,279.5 121.9,269.2 123.7,250.4 110.1,229.5 101.7,227.0 102.3,209.5 96.3,206.3 90.5,186.6 118.5,183.2 135.9,204.7 147.9,200.9 159.3,209.3 180.6,211.3 191.9,193.7 184.7,187.5 181.3,172.6',
+   govs:['تبوك','الوجه','ضباء','تيماء','أملج','حقل','البدع']},
+  {id:'jawf', name:'الجوف', capital:'سكاكا', priceMin:1200, priceMax:3000, label:[161.2,103.7],
+   points:'205.4,138.9 214.1,118.2 246.4,95.4 234.6,81.8 219.8,75.1 137.6,63.0 130.8,53.0 135.2,35.5 104.7,42.3 132.3,78.0 116.1,94.3 94.7,97.1 72.6,118.3 39.5,110.4 34.9,126.1 65.6,125.2 84.0,141.0 112.4,142.1 121.0,133.0 127.0,153.0 158.2,158.9',
+   govs:['سكاكا','القريات','دومة الجندل','طبرجل']},
+  {id:'north', name:'الحدود الشمالية', capital:'عرعر', priceMin:1000, priceMax:2500, label:[267.0,106.8],
+   points:'338.0,184.8 355.1,148.6 380.7,132.4 329.1,128.3 253.0,63.7 204.5,32.9 169.8,25.0 135.2,35.5 130.8,53.0 137.6,63.0 219.8,75.1 234.6,81.8 246.4,95.4 214.1,118.2 205.4,138.9 248.9,139.8 267.1,149.8 277.6,148.3 281.0,155.4 299.8,154.8 309.3,172.2 332.1,185.3',
+   govs:['عرعر','رفحاء','طريف']},
+  {id:'hail', name:'حائل', capital:'حائل', priceMin:1500, priceMax:4000, label:[241.7,196.7],
+   points:'332.1,185.3 309.3,172.2 299.8,154.8 281.0,155.4 277.6,148.3 267.1,149.8 248.9,139.8 205.4,138.9 158.2,158.9 181.3,172.6 184.7,187.5 191.9,193.7 180.6,211.3 184.2,256.2 211.6,248.5 228.0,250.9 244.7,244.9 253.2,227.3 290.3,198.1 304.8,191.6 321.1,200.5 327.0,195.3',
+   govs:['حائل','بقعاء','الشنان','الغزالة','السليمي','الشملي','موقق']},
+  {id:'madinah', name:'المدينة المنورة', capital:'المدينة المنورة', priceMin:3500, priceMax:9000, label:[179.4,266.7],
+   points:'248.5,282.7 234.7,264.2 234.1,252.8 228.0,250.9 211.6,248.5 184.2,256.2 180.6,211.3 159.3,209.3 147.9,200.9 135.9,204.7 118.5,183.2 90.5,186.6 96.3,206.3 102.3,209.5 101.7,227.0 110.1,229.5 123.7,250.4 121.9,269.2 102.2,279.5 106.0,289.0 131.6,303.9 139.7,319.6 147.7,318.9 165.6,332.6 179.0,330.4 178.2,342.0 187.8,352.9 202.0,350.1 225.7,330.9 224.7,321.0 234.4,316.6 236.8,305.7 244.6,305.0',
+   govs:['المدينة المنورة','ينبع','العلا','بدر','خيبر','المهد','الحناكية','العيص']},
+  {id:'qassim', name:'القصيم', capital:'بريدة', priceMin:2000, priceMax:5000, label:[287.7,240.8],
+   points:'228.0,250.9 234.1,252.8 234.7,264.2 248.5,282.7 254.6,277.0 276.7,280.8 282.9,267.4 307.2,251.9 329.4,250.9 328.3,236.7 319.2,222.9 319.7,214.7 332.8,204.4 327.0,195.3 321.1,200.5 304.8,191.6 290.3,198.1 253.2,227.3 244.7,244.9',
+   govs:['بريدة','عنيزة','الرس','المذنب','البكيرية','البدائع','الأسياح','النبهانية','رياض الخبراء','عيون الجواء','ضرية']},
+  {id:'eastern', name:'المنطقة الشرقية', capital:'الدمام', priceMin:4000, priceMax:10000, label:[527.1,335.3],
+   points:'417.2,537.3 440.4,501.2 468.4,486.1 563.0,469.0 658.2,430.1 675.0,360.8 658.9,337.1 574.7,333.6 542.2,290.8 533.1,289.7 536.2,279.1 523.3,281.1 515.5,274.2 490.2,229.0 495.5,232.3 497.1,227.7 489.7,209.8 494.6,210.5 470.7,195.5 466.2,182.3 455.0,180.3 440.8,149.3 417.9,150.1 410.6,134.6 380.7,132.4 355.1,148.6 338.0,184.8 364.6,206.6 411.5,226.5 415.0,275.4 440.5,303.2 426.2,454.7',
+   govs:['الدمام','الخبر','الظهران','الأحساء','القطيف','الجبيل','حفر الباطن','الخفجي','النعيرية','رأس تنورة','بقيق','قرية العليا']},
+  {id:'riyadh', name:'الرياض', capital:'الرياض', priceMin:8000, priceMax:20000, label:[344.4,321.2],
+   points:'426.2,454.7 440.5,303.2 415.0,275.4 411.5,226.5 364.6,206.6 338.0,184.8 332.1,185.3 327.0,195.3 332.8,204.4 319.7,214.7 319.2,222.9 328.3,236.7 329.4,250.9 307.2,251.9 282.9,267.4 276.7,280.8 254.6,277.0 248.5,282.7 244.6,305.0 255.3,337.4 273.0,341.0 275.9,352.3 290.7,354.9 287.2,391.2 295.9,406.4 308.4,421.2 304.3,435.8 322.7,456.0 347.0,464.6',
+   govs:['الرياض','الدرعية','الخرج','الدوادمي','المجمعة','الأفلاج','وادي الدواسر','حوطة بني تميم','عفيف','القويعية','ضرما','المزاحمية','رماح','ثادق','حريملاء','الحريق','السليل','شقراء','الغاط','الزلفي']},
+  {id:'makkah', name:'مكة المكرمة', capital:'مكة المكرمة', priceMin:5000, priceMax:13000, label:[223.1,398.1],
+   points:'295.9,406.4 287.2,391.2 290.7,354.9 275.9,352.3 273.0,341.0 255.3,337.4 244.6,305.0 236.8,305.7 234.4,316.6 224.7,321.0 225.7,330.9 202.0,350.1 187.8,352.9 178.2,342.0 179.0,330.4 165.6,332.6 147.7,318.9 139.7,319.6 153.9,355.2 146.7,367.3 156.9,405.1 171.1,425.0 203.4,447.5 228.3,502.0 234.0,495.6 233.1,481.7 221.9,474.8 222.3,466.9 238.5,459.5 237.7,446.6 232.6,445.4 215.4,458.6 204.2,436.3 214.2,429.8 221.6,412.4 227.7,419.0 243.8,417.5 250.0,427.1 273.1,411.7',
+   govs:['مكة المكرمة','جدة','الطائف','رابغ','القنفذة','الليث','خليص','الجموم','الكامل','رنية','تربة','ميسان','أضم','العرضية']},
+  {id:'baha', name:'الباحة', capital:'الباحة', priceMin:1000, priceMax:2500, label:[223.4,433.0],
+   points:'243.8,417.5 227.7,419.0 221.6,412.4 214.2,429.8 204.2,436.3 215.4,458.6 232.6,445.4',
+   govs:['الباحة','بلجرشي','المندق','القرى','العقيق','قلوة','المخواة','غامد الزناد']},
+  {id:'aseer', name:'عسير', capital:'أبها', priceMin:3000, priceMax:9000, label:[275.6,463.2],
+   points:'232.6,445.4 237.7,446.6 238.5,459.5 222.3,466.9 221.9,474.8 233.1,481.7 234.0,495.6 261.4,518.1 271.2,507.0 284.5,524.3 294.0,525.9 294.2,501.2 316.8,479.5 322.7,456.0 304.3,435.8 308.4,421.2 295.9,406.4 273.1,411.7 250.0,427.1 243.8,417.5',
+   govs:['أبها','خميس مشيط','بيشة','النماص','محايل عسير','رجال ألمع','تثليث','سراة عبيدة','ظهران الجنوب','أحد رفيدة','بلقرن','تنومة','البرك']},
+  {id:'najran', name:'نجران', capital:'نجران', priceMin:1200, priceMax:3000, label:[363.9,490.3],
+   points:'417.2,537.3 426.2,454.7 347.0,464.6 322.7,456.0 316.8,479.5 294.2,501.2 294.0,525.9 393.7,531.3 402.3,542.0',
+   govs:['نجران','شرورة','حبونا','بدر الجنوب','يدمة','ثار','خباش']},
+  {id:'jizan', name:'جازان', capital:'جازان', priceMin:1200, priceMax:3000, label:[266.4,527.3],
+   points:'234.0,495.6 228.3,502.0 250.7,524.9 266.1,561.8 278.4,552.1 278.6,529.6 284.5,524.3 271.2,507.0 261.4,518.1',
+   govs:['جازان','صبيا','أبو عريش','صامطة','بيش','الدرب','العارضة','فيفا','العيدابي','ضمد','الريث','أحد المسارحة','الحرث']},
+];
+
+// six fixed colors to split the map into
+const COLORS = [
+  {id:'navy',  hex:'#2541b2', name:'كحلي'},
+  {id:'gold',  hex:'#a9762c', name:'ذهبي'},
+  {id:'forest',hex:'#2f6b4f', name:'أخضر'},
+  {id:'wine',  hex:'#8a2e42', name:'عنابي'},
+  {id:'teal',  hex:'#1f7a8c', name:'تركواز'},
+  {id:'purple',hex:'#6a4c93', name:'بنفسجي'},
+];
+
+let selected = null;
+
+// Real area (km²) and population (Saudi Census 2022) data.
+// Currently populated for منطقة الرياض as a pilot (per user's request) — sourced from
+// Saudipedia / Arabic Wikipedia, citing "تعداد السعودية 2022". Other regions' governorates
+// will fall back to a live map search since we don't have verified figures for them yet.
+const GOV_DATA = {
+  // --- منطقة جازان (population: تعداد 2022 الإجمالي (1,404,997) موزّع حسب نسب سكانية
+  //     منشورة لكل محافظة — موثوق نسبيًا. Area: تقريبية عدا الحرث (أصغر محافظة بالمملكة،
+  //     100 كم² مؤكدة رسميًا).) ---
+  'جازان':           {area: 800,  areaApprox: true, population: 162980},
+  'صبيا':            {area: 1800, areaApprox: true, population: 236039},
+  'أبو عريش':        {area: 1000, areaApprox: true, population: 202320},
+  'صامطة':           {area: 1200, areaApprox: true, population: 207940},
+  'بيش':             {area: 1500, areaApprox: true, population: 80085},
+  'الدرب':           {area: 1200, areaApprox: true, population: 71655},
+  'العارضة':         {area: 1200, areaApprox: true, population: 78680},
+  'فيفا':            {area: 800,  areaApprox: true, population: 45000},
+  'العيدابي':        {area: 600,  areaApprox: true, population: 61820},
+  'ضمد':             {area: 800,  areaApprox: true, population: 74465},
+  'الريث':           {area: 700,  areaApprox: true, population: 40000},
+  'أحد المسارحة':    {area: 1200, areaApprox: true, population: 113805},
+  'الحرث':           {area: 100,  population: 30208},
+
+  // --- منطقة نجران (population: تعداد 2022 مؤكد للمحافظات الصغيرة، تقديري لنجران
+  //     وشرورة. Area: تقريبية بالكامل من إجمالي المنطقة 360,000 كم² (صحراوية شاسعة).) ---
+  'نجران':          {area: 100000, areaApprox: true, population: 420000},
+  'شرورة':          {area: 200000, areaApprox: true, population: 102101},
+  'حبونا':          {area: 850,    population: 24823},
+  'بدر الجنوب':     {area: 10000,  areaApprox: true, population: 7991},
+  'يدمة':           {area: 20000,  areaApprox: true, population: 16160},
+  'ثار':            {area: 25000,  areaApprox: true, population: 13391},
+  'خباش':           {area: 4000,   areaApprox: true, population: 7834},
+
+  // --- منطقة عسير (population: تقرير غرفة عسير الاقتصادي الربع الأول 2024 — موثوق لكل
+  //     المحافظات. Area: تقريبية بالكامل من إجمالي المنطقة 81,000 كم².) ---
+  'أبها':          {area: 3000,  areaApprox: true, population: 422243},
+  'خميس مشيط':     {area: 2500,  areaApprox: true, population: 601305},
+  'بيشة':          {area: 15000, areaApprox: true, population: 202096},
+  'النماص':        {area: 2000,  areaApprox: true, population: 38409},
+  'محايل عسير':    {area: 5000,  areaApprox: true, population: 230537},
+  'رجال ألمع':     {area: 3000,  areaApprox: true, population: 50825},
+  'تثليث':         {area: 12000, areaApprox: true, population: 36451},
+  'سراة عبيدة':    {area: 3000,  areaApprox: true, population: 57123},
+  'ظهران الجنوب':  {area: 4000,  areaApprox: true, population: 32099},
+  'أحد رفيدة':     {area: 2000,  areaApprox: true, population: 107894},
+  'بلقرن':         {area: 2500,  areaApprox: true, population: 60012},
+  'تنومة':         {area: 2000,  areaApprox: true, population: 17756},
+  'البرك':         {area: 2000,  areaApprox: true, population: 22583},
+
+  // --- منطقة الباحة (population: مزيج تعداد 2022 (قلوة، المندق، القرى، غامد الزناد) +
+  //     تقديرات نسبية للباقي. Area: تقريبية بالكامل من إجمالي المنطقة 12,000 كم².) ---
+  'الباحة':        {area: 1500, areaApprox: true, population: 87000},
+  'بلجرشي':        {area: 1500, areaApprox: true, population: 59700},
+  'المندق':        {area: 1000, areaApprox: true, population: 20010},
+  'القرى':         {area: 1000, areaApprox: true, population: 19586},
+  'العقيق':        {area: 3500, areaApprox: true, population: 32600},
+  'قلوة':          {area: 1500, areaApprox: true, population: 31608},
+  'المخواة':       {area: 1500, areaApprox: true, population: 48600},
+  'غامد الزناد':   {area: 500,  areaApprox: true, population: 12506},
+
+  // --- منطقة مكة المكرمة (population: جدة من تعداد 2022 مؤكد، الباقي تقديرات مبنية على
+  //     نسب توزيع سكانية وتقارير أقدم — أقل دقة من مناطق أخرى بسبب صعوبة إيجاد تعداد
+  //     2022 لكل محافظة على حدة. Area: تقريبية بالكامل.) ---
+  'مكة المكرمة':  {area: 3040,  areaApprox: true, population: 1840000},
+  'جدة':          {area: 5460,  areaApprox: true, population: 3712917},
+  'الطائف':       {area: 24000, areaApprox: true, population: 1300000},
+  'رابغ':         {area: 14000, areaApprox: true, population: 96000},
+  'القنفذة':      {area: 12000, areaApprox: true, population: 336000},
+  'الليث':        {area: 10000, areaApprox: true, population: 152000},
+  'خليص':         {area: 8000,  areaApprox: true, population: 63445},
+  'الجموم':       {area: 3000,  areaApprox: true, population: 104000},
+  'الكامل':       {area: 3000,  areaApprox: true, population: 23931},
+  'رنية':         {area: 15000, areaApprox: true, population: 51411},
+  'تربة':         {area: 12000, areaApprox: true, population: 49269},
+  'ميسان':        {area: 4000,  areaApprox: true, population: 15000},
+  'أضم':          {area: 6000,  areaApprox: true, population: 53300},
+  'العرضية':      {area: 4000,  areaApprox: true, population: 15000},
+
+  // --- المنطقة الشرقية (population: مزيج من مصادر 2020-2022، بعضها تقديري للمحافظات
+  //     الصغيرة. Area: الأحساء مؤكدة رسميًا (أكبر محافظة بالمملكة)، الباقي تقريبي.) ---
+  'الدمام':        {area: 3000,  areaApprox: true, population: 1050000},
+  'الخبر':         {area: 1000,  areaApprox: true, population: 658000},
+  'الظهران':       {area: 800,   areaApprox: true, population: 250000},
+  'الأحساء':       {area: 377938, population: 1100000},
+  'القطيف':        {area: 1500,  areaApprox: true, population: 552000},
+  'الجبيل':        {area: 6000,  areaApprox: true, population: 505000},
+  'حفر الباطن':    {area: 30000, areaApprox: true, population: 389993},
+  'الخفجي':        {area: 3000,  areaApprox: true, population: 100000},
+  'النعيرية':      {area: 20000, areaApprox: true, population: 50000},
+  'رأس تنورة':     {area: 1500,  areaApprox: true, population: 90000},
+  'بقيق':          {area: 1000,  areaApprox: true, population: 50000},
+  'قرية العليا':   {area: 1000,  areaApprox: true, population: 20000},
+
+  // --- منطقة القصيم (population: Saudi Census 2022 مؤكد لمعظم المحافظات، تقديري للصغيرة
+  //     جدًا (عيون الجواء، ضرية). Area: مؤكدة فقط للمذنب (11,800كم²)، والباقي موزّع
+  //     تناسبيًا من إجمالي مساحة المنطقة 73,000 كم² — كلها "تقريبية".) ---
+  'بريدة':          {area: 10000, areaApprox: true, population: 677600},
+  'عنيزة':          {area: 8000,  areaApprox: true, population: 184600},
+  'الرس':           {area: 15000, areaApprox: true, population: 121400},
+  'البكيرية':       {area: 5000,  areaApprox: true, population: 63600},
+  'البدائع':        {area: 6000,  areaApprox: true, population: 53800},
+  'النبهانية':      {area: 4000,  areaApprox: true, population: 46600},
+  'المذنب':         {area: 11800, population: 43300},
+  'الأسياح':        {area: 6000,  areaApprox: true, population: 35500},
+  'رياض الخبراء':   {area: 3500,  areaApprox: true, population: 31200},
+  'عيون الجواء':    {area: 2500,  areaApprox: true, population: 15000},
+  'ضرية':           {area: 1400,  areaApprox: true, population: 5000},
+
+  // --- منطقة المدينة المنورة (المصدر: تقرير غرفة المدينة المنورة الاقتصادي، الربع
+  //     الأول 2025 — يغطي كل المحافظات بمساحة وسكان دقيقين. مساحة "المدينة المنورة"
+  //     نفسها مُشتقة من طرح باقي المحافظات من إجمالي مساحة المنطقة 150,000 كم²، فهي
+  //     تقريبية.) ---
+  'المدينة المنورة': {area: 22142, areaApprox: true, population: 1477047},
+  'ينبع':            {area: 10679, population: 359631},
+  'العلا':           {area: 22561, population: 60103},
+  'بدر':             {area: 6918,  population: 58259},
+  'المهد':           {area: 24685, population: 48590},
+  'خيبر':            {area: 19976, population: 45532},
+  'الحناكية':        {area: 22265, population: 43256},
+  'العيص':           {area: 11256, population: 22445},
+
+  // --- منطقة حائل (population: Saudi Census 2022 where confirmed. Area: proportionally
+  //     estimated from the region total 120,000 km² except الغزالة which has an official
+  //     figure — flagged "تقريبية" where estimated.) ---
+  'حائل':    {area: 25000, areaApprox: true, population: 498575},
+  'بقعاء':   {area: 20000, areaApprox: true, population: 56362},
+  'الشنان':  {area: 15000, areaApprox: true, population: 29419},
+  'الغزالة': {area: 27000, population: 12767},
+  'السليمي': {area: 15000, areaApprox: true, population: 17343},
+  'الشملي':  {area: 10000, areaApprox: true, population: 19059},
+  'موقق':    {area: 8000,  areaApprox: true, population: 16835},
+
+  // --- منطقة الحدود الشمالية (population: Saudi Census 2022. Area: proportionally
+  //     estimated from the region total ~104,000 km² — flagged "تقريبية".) ---
+  'عرعر':   {area: 40000, areaApprox: true, population: 202719},
+  'رفحاء':  {area: 35000, areaApprox: true, population: 84536},
+  'طريف':   {area: 29000, areaApprox: true, population: 66004},
+
+  // --- منطقة الجوف (population: Saudi Census 2022. Area: proportionally estimated from
+  //     the region total 100,212 km² since no official per-governorate breakdown was found —
+  //     flagged "تقريبية" in the UI.) ---
+  'سكاكا':        {area: 30000, areaApprox: true, population: 236669},
+  'القريات':      {area: 50000, areaApprox: true, population: 195016},
+  'دومة الجندل':  {area: 15000, areaApprox: true, population: 54341},
+  'طبرجل':        {area: 5212,  areaApprox: true, population: 109796},
+
+  // --- منطقة تبوك (population: Saudi Census 2022, verified per-governorate. Area: only
+  //     included where a governorate-level km² figure was reliably found — several small
+  //     coastal governorates only publish city built-up area in hectares, not full
+  //     administrative area, so those are left out rather than guessed.) ---
+  'تبوك':   {area: 45000, areaApprox: true, population: 594350},
+  'الوجه':  {area: 12000, areaApprox: true, population: 49948},
+  'ضباء':   {area: 10000, areaApprox: true, population: 54917},
+  'تيماء':  {area: 25000, areaApprox: true, population: 42164},
+  'أملج':   {area: 16000, population: 69656},
+  'حقل':    {area: 5000,  areaApprox: true, population: 27712},
+  'البدع':  {area: 4000,  areaApprox: true, population: 17973},
+  'الرياض':          {area: 3115,  population: 7009120},
+  'الدرعية':         {area: 2020,  population: 95834},
+  'الخرج':           {area: 19790, population: 373177},
+  'الدوادمي':        {area: 30580, population: 200620},
+  'المجمعة':         {area: 30000, population: 151877},
+  'الأفلاج':         {area: 54120, population: 54544},
+  'وادي الدواسر':    {area: 48900, population: 91535},
+  'حوطة بني تميم':   {area: 7350,  population: 41854},
+  'عفيف':            {area: 26810, population: 71616},
+  'القويعية':        {area: 50580, population: 71410},
+  'ضرما':            {area: 2060,  population: 26299},
+  'المزاحمية':       {area: 3580,  population: 62760},
+  'رماح':            {area: 15900, population: 35683},
+  'ثادق':            {area: 5600,  population: 12510},
+  'حريملاء':         {area: 1480,  population: 21758},
+  'الحريق':          {area: 6790,  population: 10864},
+  'السليل':          {area: 42420, population: 35271},
+  'شقراء':           {area: 4110,  population: 46403},
+  'الغاط':           {area: 2690,  population: 10799},
+  'الزلفي':          {area: 5540,  population: 74903},
+};
+
+const regionColors = {}; // regionId -> hex (fixed / persists)
+const regionBranches = {}; // regionId -> number of branches (manual fallback, fixed / persists)
+const govHyperCounts = {}; // governorate name -> {hyper, super} user-adjusted REAL market counts (fixed / persists)
+const govPlanCounts = {}; // governorate name -> {super, hyper, mini, bakala} PLANNED branches to open (fixed / persists)
+
+function govPlanTotal(govName){
+  const p = govPlanCounts[govName];
+  if(!p) return 0;
+  return (p.super||0) + (p.hyper||0) + (p.mini||0) + (p.bakala||0);
+}
+
+// Real hyper/super counts, respecting any manual edit the user made via the steppers
+// (govHyperCounts) over the baseline researched figure (GOV_REAL_HYPER).
+function getRealCounts(govName){
+  const base = GOV_REAL_HYPER[govName] || {hyper:0, super:0};
+  const saved = govHyperCounts[govName];
+  return {
+    hyper: (saved && 'hyper' in saved) ? saved.hyper : (base.hyper || 0),
+    super: (saved && 'super' in saved) ? saved.super : (base.super || 0),
+  };
+}
+
+// Total planned branches for a region = sum of its governorates' planned counts.
+// Falls back to the manual per-region counter if no governorate-level data has been entered yet.
+function getRegionBranches(regionId){
+  const r = REGIONS.find(x=>x.id===regionId);
+  if(!r) return 0;
+  const govSum = r.govs.reduce((s,g)=>s+govPlanTotal(g), 0);
+  if(govSum > 0) return govSum;
+  return regionBranches[regionId] || 0;
+}
+
+// Real counts pulled live from Google Maps (Places) for منطقة الرياض governorates.
+// Methodology: searched each governorate and classified every result by Google's own
+// place "types": hypermarket vs supermarket (discount_supermarket counted as super).
+// Plain grocery_store / convenience_store / market / mall listings are excluded from
+// both counts — those are the "mini market" tier, which has no reliable type-based count
+// (too many, and Google has no dedicated "mini market" category), so it's a live link only.
+// Search results capped at 10 per query, so الرياض (which hit the cap) is a lower bound.
+const GOV_REAL_HYPER = {
+  // منطقة جازان
+  'جازان':           {hyper: 2, super: 7},
+  'صبيا':            {hyper: 1, super: 4},
+  'أبو عريش':        {hyper: 0, super: 6},
+  'صامطة':           {hyper: 1, super: 4},
+  'بيش':             {hyper: 0, super: 1},
+  'الدرب':           {hyper: 0, super: 1},
+  'العارضة':         {hyper: 0, super: 1},
+  'فيفا':            {hyper: 0, super: 0},
+  'العيدابي':        {hyper: 0, super: 0},
+  'ضمد':             {hyper: 1, super: 0},
+  'الريث':           {hyper: 0, super: 0},
+  'أحد المسارحة':    {hyper: 1, super: 0},
+  'الحرث':           {hyper: 0, super: 0},
+  // منطقة نجران
+  'نجران':          {hyper: 1, super: 7},
+  'شرورة':          {hyper: 0, super: 5},
+  'حبونا':          {hyper: 0, super: 0},
+  'بدر الجنوب':     {hyper: 0, super: 0},
+  'يدمة':           {hyper: 0, super: 1},
+  'ثار':            {hyper: 0, super: 0},
+  'خباش':           {hyper: 0, super: 1},
+  // منطقة عسير
+  'أبها':          {hyper: 1, super: 7},
+  'خميس مشيط':     {hyper: 1, super: 8},
+  'بيشة':          {hyper: 1, super: 7},
+  'النماص':        {hyper: 0, super: 3},
+  'محايل عسير':    {hyper: 1, super: 7},
+  'رجال ألمع':     {hyper: 0, super: 1},
+  'تثليث':         {hyper: 0, super: 1},
+  'سراة عبيدة':    {hyper: 0, super: 0},
+  'ظهران الجنوب':  {hyper: 0, super: 3},
+  'أحد رفيدة':     {hyper: 0, super: 4},
+  'بلقرن':         {hyper: 0, super: 2},
+  'تنومة':         {hyper: 0, super: 0},
+  'البرك':         {hyper: 0, super: 0},
+  // منطقة الباحة
+  'الباحة':        {hyper: 0, super: 5},
+  'بلجرشي':        {hyper: 0, super: 6},
+  'المندق':        {hyper: 0, super: 0},
+  'القرى':         {hyper: 0, super: 0},
+  'العقيق':        {hyper: 0, super: 1},
+  'قلوة':          {hyper: 0, super: 0},
+  'المخواة':       {hyper: 0, super: 2},
+  'غامد الزناد':   {hyper: 0, super: 1},
+  // منطقة مكة المكرمة
+  'مكة المكرمة':  {hyper: 6, super: 3},
+  'جدة':          {hyper: 4, super: 6},
+  'الطائف':       {hyper: 2, super: 5},
+  'رابغ':         {hyper: 0, super: 7},
+  'القنفذة':      {hyper: 0, super: 4},
+  'الليث':        {hyper: 0, super: 1},
+  'خليص':         {hyper: 0, super: 2},
+  'الجموم':       {hyper: 1, super: 2},
+  'الكامل':       {hyper: 0, super: 0},
+  'رنية':         {hyper: 0, super: 3},
+  'تربة':         {hyper: 0, super: 1},
+  'ميسان':        {hyper: 0, super: 0},
+  'أضم':          {hyper: 0, super: 0},
+  'العرضية':      {hyper: 0, super: 0},
+  // المنطقة الشرقية
+  'الدمام':        {hyper: 8, super: 1},
+  'الخبر':         {hyper: 4, super: 4},
+  'الظهران':       {hyper: 3, super: 4},
+  'الأحساء':       {hyper: 4, super: 2},
+  'القطيف':        {hyper: 5, super: 3},
+  'الجبيل':        {hyper: 5, super: 4},
+  'حفر الباطن':    {hyper: 2, super: 7},
+  'الخفجي':        {hyper: 1, super: 5},
+  'النعيرية':      {hyper: 0, super: 0},
+  'رأس تنورة':     {hyper: 0, super: 4},
+  'بقيق':          {hyper: 1, super: 2},
+  'قرية العليا':   {hyper: 0, super: 0},
+  // منطقة القصيم
+  'بريدة':          {hyper: 3, super: 8},
+  'عنيزة':          {hyper: 1, super: 5},
+  'الرس':           {hyper: 0, super: 5},
+  'البكيرية':       {hyper: 0, super: 9},
+  'البدائع':        {hyper: 0, super: 3},
+  'النبهانية':      {hyper: 0, super: 0},
+  'المذنب':         {hyper: 0, super: 4},
+  'الأسياح':        {hyper: 0, super: 1},
+  'رياض الخبراء':   {hyper: 0, super: 6},
+  'عيون الجواء':    {hyper: 0, super: 1},
+  'ضرية':           {hyper: 0, super: 0},
+  // منطقة المدينة المنورة
+  'المدينة المنورة': {hyper: 3, super: 12},
+  'ينبع':            {hyper: 4, super: 6},
+  'العلا':           {hyper: 0, super: 3},
+  'بدر':             {hyper: 0, super: 0},
+  'خيبر':            {hyper: 0, super: 1},
+  'المهد':           {hyper: 0, super: 0},
+  'الحناكية':        {hyper: 0, super: 4},
+  'العيص':           {hyper: 0, super: 0},
+  // منطقة حائل
+  'حائل':    {hyper: 3, super: 10},
+  'بقعاء':   {hyper: 0, super: 0},
+  'الشنان':  {hyper: 0, super: 1},
+  'الغزالة': {hyper: 0, super: 0},
+  'السليمي': {hyper: 0, super: 0},
+  'الشملي':  {hyper: 0, super: 1},
+  'موقق':    {hyper: 0, super: 0},
+  // منطقة الحدود الشمالية
+  'عرعر':   {hyper: 1, super: 8},
+  'رفحاء':  {hyper: 0, super: 3},
+  'طريف':   {hyper: 0, super: 5},
+  // منطقة الجوف
+  'سكاكا':        {hyper: 2, super: 9},
+  'القريات':      {hyper: 0, super: 12},
+  'دومة الجندل':  {hyper: 0, super: 4},
+  'طبرجل':        {hyper: 0, super: 6},
+  // منطقة تبوك
+  'تبوك':  {hyper: 1, super: 6},
+  'الوجه': {hyper: 0, super: 0},
+  'ضباء':  {hyper: 0, super: 0},
+  'تيماء': {hyper: 0, super: 1},
+  'أملج':  {hyper: 0, super: 2},
+  'حقل':   {hyper: 0, super: 2},
+  'البدع': {hyper: 0, super: 0},
+  // منطقة الرياض
+  'الرياض':          {hyper: 10, super: 7, capped: true},
+  'الدرعية':         {hyper: 0,  super: 4},
+  'الخرج':           {hyper: 4,  super: 4},
+  'الدوادمي':        {hyper: 1,  super: 6},
+  'المجمعة':         {hyper: 2,  super: 5},
+  'الأفلاج':         {hyper: 1,  super: 1},
+  'وادي الدواسر':    {hyper: 0,  super: 9},
+  'حوطة بني تميم':   {hyper: 0,  super: 4},
+  'عفيف':            {hyper: 0,  super: 4},
+  'القويعية':        {hyper: 0,  super: 6},
+  'ضرما':            {hyper: 1,  super: 0},
+  'المزاحمية':       {hyper: 1,  super: 6},
+  'رماح':            {hyper: 0,  super: 7},
+  'ثادق':            {hyper: 0,  super: 1},
+  'حريملاء':         {hyper: 0,  super: 3},
+  'الحريق':          {hyper: 0,  super: 0},
+  'السليل':          {hyper: 0,  super: 2},
+  'شقراء':           {hyper: 1,  super: 0},
+  'الغاط':           {hyper: 0,  super: 4},
+  'الزلفي':          {hyper: 0,  super: 8},
+};
+let branchTarget = 50; // editable goal for total branches
+
+// === Cloud sync (Firebase Realtime Database) ===
+// 1) Create a free Firebase project → Realtime Database → start in test mode.
+// 2) Copy the database URL (looks like https://YOUR-PROJECT-default-rtdb.firebaseio.com)
+// 3) Paste it below between the quotes, keeping "/tawassuMap.json" at the end.
+const FIREBASE_DB_URL = "https://tawassu-map-default-rtdb.firebaseio.com/tawassuMap.json";
+
+const syncStatus = document.getElementById('syncStatus');
+function setSyncStatus(text, cls){
+  syncStatus.textContent = text;
+  syncStatus.className = 'sync-status' + (cls ? ' '+cls : '');
+}
+
+let saveTimer = null;
+function saveState(){
+  if(FIREBASE_DB_URL.includes('PASTE_YOUR_FIREBASE_URL_HERE')) return;
+  clearTimeout(saveTimer);
+  setSyncStatus('💾 جارٍ الحفظ...');
+  saveTimer = setTimeout(async ()=>{
+    try{
+      const state = {
+        regionColors, regionBranches, branchTarget, govHyperCounts, govPlanCounts,
+        colorNames: COLORS.map(c=>c.name)
+      };
+      const res = await fetch(FIREBASE_DB_URL, { method:'PUT', body: JSON.stringify(state) });
+      if(!res.ok) throw new Error('bad response');
+      setSyncStatus('✅ محفوظ ومتزامن للجميع', 'ok');
+    }catch(e){
+      setSyncStatus('⚠️ تعذّر الحفظ — تحقق من الاتصال', 'err');
+    }
+  }, 400);
+}
+
+async function loadState(){
+  if(FIREBASE_DB_URL.includes('PASTE_YOUR_FIREBASE_URL_HERE')){
+    setSyncStatus('⚠️ لم يتم ربط قاعدة بيانات بعد — التغييرات محلية مؤقتًا فقط', 'err');
+    buildMap(); renderPanel(); renderBottomPanel();
+    return;
+  }
+  try{
+    setSyncStatus('🔄 جارٍ تحميل البيانات المشتركة...');
+    const res = await fetch(FIREBASE_DB_URL);
+    const data = await res.json();
+    if(data){
+      if(data.regionColors) Object.assign(regionColors, data.regionColors);
+      if(data.regionBranches) Object.assign(regionBranches, data.regionBranches);
+      if(data.govHyperCounts) Object.assign(govHyperCounts, data.govHyperCounts);
+      if(data.govPlanCounts) Object.assign(govPlanCounts, data.govPlanCounts);
+      if(data.branchTarget) branchTarget = data.branchTarget;
+      if(data.colorNames) data.colorNames.forEach((n,i)=>{ if(COLORS[i] && n) COLORS[i].name = n; });
+    }
+    setSyncStatus('✅ محفوظ ومتزامن للجميع', 'ok');
+  }catch(e){
+    setSyncStatus('⚠️ تعذّر تحميل البيانات — تحقق من الاتصال', 'err');
+  }
+  buildMap(); renderPanel(); renderBottomPanel();
+}
+
+const layer = document.getElementById('regions-layer');
+const panel = document.getElementById('panel');
+const legendGovs = document.getElementById('legend-govs');
+const legendBranches = document.getElementById('legend-branches');
+const legendHyper = document.getElementById('legend-hyper');
+const legendSuper = document.getElementById('legend-super');
+const legendMini = document.getElementById('legend-mini');
+const legendBakala = document.getElementById('legend-bakala');
+const colorKey = document.getElementById('colorKey');
+const bottomPanel = document.getElementById('bottomPanel');
+const goalProgress = document.getElementById('goalProgress');
+const goalPercent = document.getElementById('goalPercent');
+const goalTotal = document.getElementById('goalTotal');
+const goalTarget = document.getElementById('goalTarget');
+const GOAL_CIRC = 2 * Math.PI * 27;
+goalProgress.style.strokeDasharray = GOAL_CIRC.toFixed(1);
+
+const totalGovs = REGIONS.reduce((s,r)=>s+r.govs.length,0);
+legendGovs.innerHTML = '<b>'+totalGovs+'</b> محافظة';
+
+const ns = 'http://www.w3.org/2000/svg';
+
+function updateGoalRing(){
+  const total = REGIONS.reduce((s,r)=>s+getRegionBranches(r.id),0);
+  const pct = branchTarget > 0 ? Math.min(100, Math.round((total/branchTarget)*100)) : 0;
+  const offset = GOAL_CIRC * (1 - pct/100);
+  goalProgress.style.strokeDashoffset = offset.toFixed(1);
+  goalPercent.textContent = pct + '%';
+  goalTotal.textContent = total + ' فرع';
+  if(document.activeElement !== goalTarget) goalTarget.textContent = branchTarget;
+}
+
+function bindGoalTarget(){
+  goalTarget.textContent = branchTarget;
+  const commit = ()=>{
+    const val = parseInt(goalTarget.textContent.replace(/[^\d]/g,''), 10);
+    branchTarget = (!isNaN(val) && val > 0) ? val : branchTarget;
+    goalTarget.textContent = branchTarget;
+    updateGoalRing();
+    saveState();
+  };
+  goalTarget.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); goalTarget.blur(); }
+  });
+  goalTarget.addEventListener('blur', commit);
+  goalTarget.addEventListener('click', e=>e.stopPropagation());
+}
+bindGoalTarget();
+
+function updateColorKey(){
+  updateGoalRing();
+  const totalBranches = REGIONS.reduce((s,r)=>s+getRegionBranches(r.id),0);
+  legendBranches.innerHTML = '<b>'+totalBranches+'</b> فرع';
+
+  const typeTotals = {super:0, hyper:0, mini:0, bakala:0};
+  Object.values(govPlanCounts).forEach(p=>{
+    typeTotals.super += p.super||0;
+    typeTotals.hyper += p.hyper||0;
+    typeTotals.mini += p.mini||0;
+    typeTotals.bakala += p.bakala||0;
+  });
+  legendHyper.textContent = typeTotals.hyper;
+  legendSuper.textContent = typeTotals.super;
+  legendMini.textContent = typeTotals.mini;
+  legendBakala.textContent = typeTotals.bakala;
+
+  colorKey.innerHTML = COLORS.map((c,i)=>{
+    const count = Object.values(regionColors).filter(h=>h===c.hex).length;
+    return `<span><i style="background:${c.hex}"></i><span class="cname" contenteditable="true" spellcheck="false" data-idx="${i}" title="اضغط لإعادة التسمية">${c.name}</span> (${count})</span>`;
+  }).join('');
+
+  colorKey.querySelectorAll('.cname').forEach(el=>{
+    const idx = +el.getAttribute('data-idx');
+    const commit = ()=>{
+      const val = el.textContent.trim();
+      COLORS[idx].name = val || COLORS[idx].name;
+      // if selection panel is open with a color picker, refresh its swatch titles too
+      if(selected) renderPanel();
+      saveState();
+    };
+    el.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); el.blur(); }
+    });
+    el.addEventListener('blur', commit);
+    el.addEventListener('click', e=>e.stopPropagation());
+  });
+}
+
+function buildMap(){
+  layer.innerHTML = '';
+  REGIONS.forEach(r=>{
+    const assigned = regionColors[r.id];
+    const g = document.createElementNS(ns,'g');
+    g.setAttribute('class','region'+(selected===r.id?' selected':'')+(assigned?' colored':''));
+    g.setAttribute('data-id', r.id);
+
+    const poly = document.createElementNS(ns,'polygon');
+    poly.setAttribute('points', r.points);
+    poly.setAttribute('class','fill');
+    if(assigned) poly.style.fill = assigned;
+    g.appendChild(poly);
+
+    const [cx,cy] = r.label;
+    const small = (r.id==='baha');
+    const label1 = document.createElementNS(ns,'text');
+    label1.setAttribute('x', cx);
+    label1.setAttribute('y', cy + 3);
+    label1.setAttribute('class','label-ar');
+    label1.setAttribute('font-size', small ? 8.5 : 12);
+    label1.textContent = r.name;
+    g.appendChild(label1);
+
+    if(selected===r.id){
+      const dot = document.createElementNS(ns,'circle');
+      dot.setAttribute('cx', cx);
+      dot.setAttribute('cy', cy - (small?12:16));
+      dot.setAttribute('r', 3);
+      dot.setAttribute('class','cap-dot');
+      g.appendChild(dot);
+    }
+
+    const branches = getRegionBranches(r.id);
+    if(branches > 0){
+      const above = (r.id==='tabuk' || r.id==='makkah');
+      const bg = document.createElementNS(ns,'g');
+      bg.setAttribute('class','branch-badge');
+      const bx = cx;
+      const by = above ? cy - (small ? 20 : 28) : cy + (small ? 14 : 20);
+      const circle = document.createElementNS(ns,'circle');
+      circle.setAttribute('cx', bx);
+      circle.setAttribute('cy', by);
+      circle.setAttribute('r', small ? 8 : 10);
+      bg.appendChild(circle);
+      const t = document.createElementNS(ns,'text');
+      t.setAttribute('x', bx);
+      t.setAttribute('y', by + (small?3:3.5));
+      t.setAttribute('font-size', small ? 8.5 : 10.5);
+      t.textContent = branches;
+      bg.appendChild(t);
+      g.appendChild(bg);
+    }
+
+    g.addEventListener('click', ()=>selectRegion(r.id));
+    layer.appendChild(g);
+  });
+  updateColorKey();
+}
+
+function colorPickerHTML(regionId){
+  const current = regionColors[regionId];
+  return `
+    <div class="color-picker">
+      <span class="cp-label">تلوين هذه المنطقة (ثابت)</span>
+      <div class="swatches">
+        <span class="swatch none ${!current?'active':''}" data-hex="">✕</span>
+        ${COLORS.map(c=>`<span class="swatch ${current===c.hex?'active':''}" data-hex="${c.hex}" style="background:${c.hex}" title="${c.name}"></span>`).join('')}
+      </div>
+      <div class="branch-counter">
+        <span class="cp-label">عدد الفروع الكلي<br><small style="font-weight:400;color:var(--ink-soft);">محسوب تلقائيًا من محافظاتها إن وُجدت خطة، وإلا يدوي</small></span>
+        <div class="stepper">
+          <button type="button" id="branch-minus">−</button>
+          <span class="bcount" id="branch-count">${getRegionBranches(regionId)}</span>
+          <button type="button" id="branch-plus">+</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bindColorPicker(regionId){
+  document.querySelectorAll('.swatch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      const hex = sw.getAttribute('data-hex');
+      if(hex){ regionColors[regionId] = hex; }
+      else { delete regionColors[regionId]; }
+      buildMap();
+      renderPanel();
+      renderBottomPanel();
+      saveState();
+    });
+  });
+
+  const countEl = document.getElementById('branch-count');
+  const setBranches = (val)=>{
+    val = Math.max(0, val);
+    if(val === 0) delete regionBranches[regionId];
+    else regionBranches[regionId] = val;
+    countEl.textContent = getRegionBranches(regionId);
+    buildMap();
+    renderBottomPanel();
+    saveState();
+  };
+  document.getElementById('branch-minus').addEventListener('click', ()=>{
+    setBranches((regionBranches[regionId]||0) - 1);
+  });
+  document.getElementById('branch-plus').addEventListener('click', ()=>{
+    setBranches((regionBranches[regionId]||0) + 1);
+  });
+}
+
+function renderPanel(){
+  if(!selected){
+    panel.innerHTML = `
+      <h2>مناطق المملكة</h2>
+      <p class="hint">اضغط على أي منطقة لعرض محافظاتها ولتلوينها بأحد الألوان الستة. اللون يبقى ثابتًا على الخريطة حتى بعد إلغاء التحديد.</p>
+      <div id="rows"></div>
+    `;
+    const rows = document.getElementById('rows');
+    REGIONS.forEach(r=>{
+      const row = document.createElement('div');
+      row.className='region-row';
+      const dot = regionColors[r.id] ? `<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${regionColors[r.id]};margin-inline-end:6px;"></i>` : '';
+      const branches = getRegionBranches(r.id);
+      const branchTag = branches>0 ? `<span class="count" style="margin-inline-end:6px;">${branches} فرع</span>` : '';
+      row.innerHTML = `<span class="name">${dot}${r.name}</span><span>${branchTag}<span class="count">${r.govs.length} محافظة</span></span>`;
+      row.addEventListener('click', ()=>selectRegion(r.id));
+      rows.appendChild(row);
+    });
+    return;
+  }
+
+  const r = REGIONS.find(x=>x.id===selected);
+  panel.innerHTML = `
+    <h2>${r.name}</h2>
+    <p class="hint">المركز الإداري: ${r.capital} · عدد المحافظات: ${r.govs.length}</p>
+    ${colorPickerHTML(r.id)}
+    <button type="button" id="print-region-report" class="print-report-btn">🖨️ طباعة تقرير المنطقة</button>
+    <div class="gov-block">
+      <h3>المحافظات</h3>
+      <p class="hint" style="margin-bottom:10px;">اضغط على أي محافظة لعرض مساحتها وعدد سكانها وأبرز الهايبرماركت فيها.</p>
+      <div class="gov-list" id="gov-list">
+        ${r.govs.map(g=>`<span class="gov-chip" data-gov="${g}">${g}</span>`).join('')}
+      </div>
+      <div id="gov-detail-slot"></div>
+    </div>
+    <span class="back-link" id="back-link">‹ عرض كل المناطق</span>
+  `;
+  bindColorPicker(r.id);
+  bindGovChips();
+  document.getElementById('print-region-report').addEventListener('click', ()=>{
+    printRegionReport(r.id);
+  });
+  document.getElementById('back-link').addEventListener('click', ()=>{
+    selected=null; buildMap(); renderPanel(); renderBottomPanel();
+  });
+}
+
+let activeGov = null;
+
+function bindGovChips(){
+  document.querySelectorAll('.gov-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const gov = chip.getAttribute('data-gov');
+      activeGov = (activeGov === gov) ? null : gov;
+      document.querySelectorAll('.gov-chip').forEach(c=>{
+        c.classList.toggle('active', c.getAttribute('data-gov') === activeGov);
+      });
+      renderGovDetail();
+    });
+  });
+}
+
+function renderGovDetail(){
+  const slot = document.getElementById('gov-detail-slot');
+  if(!slot) return;
+  if(!activeGov){ slot.innerHTML = ''; return; }
+
+  const data = GOV_DATA[activeGov];
+  const hyperMapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent('هايبر ماركت في ' + activeGov);
+  const superMapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent('سوبر ماركت في ' + activeGov);
+  const miniMapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent('بقالة ميني ماركت في ' + activeGov);
+
+  let statsHTML;
+  if(data){
+    const approxTag = data.areaApprox ? ` <span style="font-size:10px;color:var(--gold-dim,#a9762c);font-weight:700;">(تقريبية)</span>` : '';
+    const areaCell = (data.area !== undefined)
+      ? `<div class="gov-stat"><div class="gs-label">المساحة</div><div class="gs-value">${fmt(data.area)} كم²${approxTag}</div></div>`
+      : `<div class="gov-stat"><div class="gs-label">المساحة</div><div class="gs-value" style="font-size:11px;color:var(--ink-soft);font-weight:600;">غير موثّقة بدقة</div></div>`;
+    const popCell = (data.population !== undefined)
+      ? `<div class="gov-stat"><div class="gs-label">عدد السكان</div><div class="gs-value">${fmt(data.population)}</div></div>`
+      : `<div class="gov-stat"><div class="gs-label">عدد السكان</div><div class="gs-value" style="font-size:11px;color:var(--ink-soft);font-weight:600;">غير مُدرج بعد</div></div>`;
+    const approxNote = data.areaApprox ? `<p class="no-data" style="margin-top:8px;">* المساحة تقديرية (موزّعة تناسبيًا من إجمالي مساحة المنطقة) لعدم توفر رقم رسمي دقيق لهذه المحافظة تحديدًا.</p>` : '';
+    statsHTML = `<div class="gov-stats">${areaCell}${popCell}</div>${approxNote}`;
+  } else {
+    statsHTML = `<p class="no-data">بيانات المساحة والسكان لهذه المحافظة غير مُدرجة بعد — تقدر تطلب توسيعها.</p>`;
+  }
+
+  const real = getRealCounts(activeGov);
+  const hyperVal = real.hyper;
+  const superVal = real.super;
+  const cappedNote = (GOV_REAL_HYPER[activeGov] && GOV_REAL_HYPER[activeGov].capped) ? ' (وصل لسقف نتائج البحث — العدد الفعلي أكبر)' : '';
+
+  slot.innerHTML = `
+    <div class="gov-detail">
+      <h4>محافظة ${activeGov}</h4>
+      ${statsHTML}
+
+      <div class="gov-hyper-row">
+        <div class="ghr-label">
+          🛒 هايبر ماركت${cappedNote}
+          <small>من خرائط قوقل فعليًا — تصنيف "hypermarket"</small>
+        </div>
+        <div class="stepper">
+          <button type="button" id="hyper-minus">−</button>
+          <span class="bcount" id="hyper-count">${hyperVal}</span>
+          <button type="button" id="hyper-plus">+</button>
+        </div>
+      </div>
+      <a class="bp-link" target="_blank" rel="noopener" href="${hyperMapsUrl}">تحقق من الهايبرماركت على الخريطة <span class="arrow">←</span></a>
+
+      <div class="gov-hyper-row" style="margin-top:14px;">
+        <div class="ghr-label">
+          🏪 سوبر ماركت
+          <small>من خرائط قوقل فعليًا — تصنيف "supermarket"</small>
+        </div>
+        <div class="stepper">
+          <button type="button" id="super-minus">−</button>
+          <span class="bcount" id="super-count">${superVal}</span>
+          <button type="button" id="super-plus">+</button>
+        </div>
+      </div>
+      <a class="bp-link" target="_blank" rel="noopener" href="${superMapsUrl}">تحقق من السوبر ماركت على الخريطة <span class="arrow">←</span></a>
+
+      <div class="gov-mini-row">
+        🏬 <b>ميني ماركت / بقالات:</b> ما فيه تصنيف رسمي أو رقم موثوق لهذي الفئة (أعداد كبيرة جدًا)، تقدر تتصفحها مباشرة:
+      </div>
+      <a class="bp-link" target="_blank" rel="noopener" href="${miniMapsUrl}">تصفح الميني ماركت على الخريطة <span class="arrow">←</span></a>
+
+      <div class="gov-plan-heading">📋 خطة التوسع — عدد الفروع المطلوب إنشاؤها في ${activeGov}</div>
+      <div class="gov-plan-total">إجمالي فروع هذه المحافظة: <b id="gov-plan-total">${govPlanTotal(activeGov)}</b> — يُضاف تلقائيًا لإجمالي فروع المنطقة</div>
+
+      <div class="gov-hyper-row">
+        <div class="ghr-label">🏪 سوبر ماركت</div>
+        <div class="stepper">
+          <button type="button" id="plan-super-minus">−</button>
+          <span class="bcount" id="plan-super-count">${(govPlanCounts[activeGov]&&govPlanCounts[activeGov].super)||0}</span>
+          <button type="button" id="plan-super-plus">+</button>
+        </div>
+      </div>
+      <div class="gov-hyper-row">
+        <div class="ghr-label">🛒 هايبر ماركت</div>
+        <div class="stepper">
+          <button type="button" id="plan-hyper-minus">−</button>
+          <span class="bcount" id="plan-hyper-count">${(govPlanCounts[activeGov]&&govPlanCounts[activeGov].hyper)||0}</span>
+          <button type="button" id="plan-hyper-plus">+</button>
+        </div>
+      </div>
+      <div class="gov-hyper-row">
+        <div class="ghr-label">🏬 ميني ماركت</div>
+        <div class="stepper">
+          <button type="button" id="plan-mini-minus">−</button>
+          <span class="bcount" id="plan-mini-count">${(govPlanCounts[activeGov]&&govPlanCounts[activeGov].mini)||0}</span>
+          <button type="button" id="plan-mini-plus">+</button>
+        </div>
+      </div>
+      <div class="gov-hyper-row">
+        <div class="ghr-label">🛍️ بقالة</div>
+        <div class="stepper">
+          <button type="button" id="plan-bakala-minus">−</button>
+          <span class="bcount" id="plan-bakala-count">${(govPlanCounts[activeGov]&&govPlanCounts[activeGov].bakala)||0}</span>
+          <button type="button" id="plan-bakala-plus">+</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const hCountEl = document.getElementById('hyper-count');
+  const sCountEl = document.getElementById('super-count');
+
+  const persist = ()=>{
+    govHyperCounts[activeGov] = {
+      hyper: parseInt(hCountEl.textContent, 10),
+      super: parseInt(sCountEl.textContent, 10)
+    };
+    saveState();
+  };
+
+  document.getElementById('hyper-minus').addEventListener('click', ()=>{
+    hCountEl.textContent = Math.max(0, parseInt(hCountEl.textContent,10) - 1);
+    persist();
+  });
+  document.getElementById('hyper-plus').addEventListener('click', ()=>{
+    hCountEl.textContent = parseInt(hCountEl.textContent,10) + 1;
+    persist();
+  });
+  document.getElementById('super-minus').addEventListener('click', ()=>{
+    sCountEl.textContent = Math.max(0, parseInt(sCountEl.textContent,10) - 1);
+    persist();
+  });
+  document.getElementById('super-plus').addEventListener('click', ()=>{
+    sCountEl.textContent = parseInt(sCountEl.textContent,10) + 1;
+    persist();
+  });
+
+  // --- expansion-plan counters (super/hyper/mini/bakala) ---
+  const planTotalEl = document.getElementById('gov-plan-total');
+  const planTypes = [
+    {key:'super', id:'plan-super-count'},
+    {key:'hyper', id:'plan-hyper-count'},
+    {key:'mini', id:'plan-mini-count'},
+    {key:'bakala', id:'plan-bakala-count'},
+  ];
+  function persistPlan(){
+    const plan = {};
+    planTypes.forEach(t=>{
+      plan[t.key] = parseInt(document.getElementById(t.id).textContent, 10) || 0;
+    });
+    if(plan.super || plan.hyper || plan.mini || plan.bakala){
+      govPlanCounts[activeGov] = plan;
+    } else {
+      delete govPlanCounts[activeGov];
+    }
+    planTotalEl.textContent = govPlanTotal(activeGov);
+    const regionBranchEl = document.getElementById('branch-count');
+    if(regionBranchEl && selected) regionBranchEl.textContent = getRegionBranches(selected);
+    buildMap();
+    renderBottomPanel();
+    saveState();
+  }
+  planTypes.forEach(t=>{
+    const el = document.getElementById(t.id);
+    document.getElementById('plan-'+t.key+'-minus').addEventListener('click', ()=>{
+      el.textContent = Math.max(0, parseInt(el.textContent,10) - 1);
+      persistPlan();
+    });
+    document.getElementById('plan-'+t.key+'-plus').addEventListener('click', ()=>{
+      el.textContent = parseInt(el.textContent,10) + 1;
+      persistPlan();
+    });
+  });
+}
+
+function fmt(n){ return n.toLocaleString('ar-SA'); }
+
+function printRegionReport(regionId){
+  const r = REGIONS.find(x=>x.id===regionId);
+  if(!r) return;
+
+  const rows = r.govs.map(g=>{
+    const data = GOV_DATA[g] || {};
+    const real = getRealCounts(g);
+    const plan = govPlanCounts[g] || {super:0, hyper:0, mini:0, bakala:0};
+    const planTotal = (plan.super||0) + (plan.hyper||0) + (plan.mini||0) + (plan.bakala||0);
+
+    const areaCell = (data.area !== undefined)
+      ? fmt(data.area) + ' كم²' + (data.areaApprox ? ' *' : '')
+      : '—';
+    const popCell = (data.population !== undefined) ? fmt(data.population) : '—';
+
+    return `
+      <tr>
+        <td>${g}</td>
+        <td>${areaCell}</td>
+        <td>${popCell}</td>
+        <td>${real.hyper || 0}</td>
+        <td>${real.super || 0}</td>
+        <td>${plan.hyper || 0}</td>
+        <td>${plan.super || 0}</td>
+        <td>${plan.mini || 0}</td>
+        <td>${plan.bakala || 0}</td>
+        <td><b>${planTotal}</b></td>
+      </tr>
+    `;
+  }).join('');
+
+  // Region totals
+  let tArea=0, tPop=0, tRealHyper=0, tRealSuper=0, tPlanHyper=0, tPlanSuper=0, tPlanMini=0, tPlanBakala=0, hasArea=false, hasPop=false;
+  r.govs.forEach(g=>{
+    const data = GOV_DATA[g] || {};
+    const real = getRealCounts(g);
+    const plan = govPlanCounts[g] || {super:0, hyper:0, mini:0, bakala:0};
+    if(data.area !== undefined){ tArea += data.area; hasArea = true; }
+    if(data.population !== undefined){ tPop += data.population; hasPop = true; }
+    tRealHyper += real.hyper || 0;
+    tRealSuper += real.super || 0;
+    tPlanHyper += plan.hyper || 0;
+    tPlanSuper += plan.super || 0;
+    tPlanMini += plan.mini || 0;
+    tPlanBakala += plan.bakala || 0;
+  });
+  const tPlanTotal = tPlanHyper + tPlanSuper + tPlanMini + tPlanBakala;
+
+  const today = new Date().toLocaleDateString('ar-SA-u-nu-latn', {year:'numeric', month:'long', day:'numeric'});
+
+  const html = `
+    <div class="header">
+      <div>
+        <h1>تقرير منطقة ${r.name}</h1>
+        <p>المركز الإداري: ${r.capital} · عدد المحافظات: ${r.govs.length}</p>
+      </div>
+      <div class="meta">تاريخ التقرير: ${today}</div>
+    </div>
+
+    <div class="summary">
+      <div class="card"><div class="lbl">إجمالي المساحة</div><div class="val">${hasArea ? fmt(tArea)+' كم²' : '—'}</div></div>
+      <div class="card"><div class="lbl">إجمالي السكان</div><div class="val">${hasPop ? fmt(tPop) : '—'}</div></div>
+      <div class="card"><div class="lbl">هايبر موجود فعليًا</div><div class="val">${tRealHyper}</div></div>
+      <div class="card"><div class="lbl">سوبر موجود فعليًا</div><div class="val">${tRealSuper}</div></div>
+      <div class="card"><div class="lbl">إجمالي الفروع المخططة</div><div class="val">${tPlanTotal}</div></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">المحافظة</th>
+          <th rowspan="2">المساحة</th>
+          <th rowspan="2">عدد السكان</th>
+          <th colspan="2">موجود فعليًا (خرائط قوقل)</th>
+          <th colspan="4">خطة التوسع (فروعنا)</th>
+          <th rowspan="2">إجمالي الخطة</th>
+        </tr>
+        <tr>
+          <th>هايبر</th>
+          <th>سوبر</th>
+          <th>هايبر</th>
+          <th>سوبر</th>
+          <th>ميني</th>
+          <th>بقالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>الإجمالي</td>
+          <td>${hasArea ? fmt(tArea)+' كم²' : '—'}</td>
+          <td>${hasPop ? fmt(tPop) : '—'}</td>
+          <td>${tRealHyper}</td>
+          <td>${tRealSuper}</td>
+          <td>${tPlanHyper}</td>
+          <td>${tPlanSuper}</td>
+          <td>${tPlanMini}</td>
+          <td>${tPlanBakala}</td>
+          <td>${tPlanTotal}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p class="note">* المساحة تقريبية لعدم توفر رقم رسمي دقيق لهذه المحافظة. أرقام "موجود فعليًا" من بحث خرائط قوقل وقد لا تعكس كل الفروع خصوصًا بالمدن الكبيرة. أرقام "خطة التوسع" مُدخلة يدويًا وقابلة للتعديل من التطبيق.</p>
+  `;
+
+  let area = document.getElementById('printReportArea');
+  if(!area){
+    area = document.createElement('div');
+    area.id = 'printReportArea';
+    document.body.appendChild(area);
+  }
+  area.innerHTML = `
+    <div class="print-modal-bar">
+      <button type="button" class="do-print" id="doPrintBtn">🖨️ طباعة / تنزيل PDF</button>
+      <button type="button" class="do-close" id="doCloseBtn">✕ إغلاق</button>
+    </div>
+    ${html}
+  `;
+  area.classList.add('active');
+  document.body.classList.add('printing-report');
+
+  document.getElementById('doCloseBtn').addEventListener('click', ()=>{
+    area.classList.remove('active');
+    document.body.classList.remove('printing-report');
+  });
+  document.getElementById('doPrintBtn').addEventListener('click', ()=>{
+    downloadStandaloneReport(r, html);
+    // also try the native print dialog in case the browser supports it — harmless if blocked
+    try{ window.print(); }catch(e){}
+  });
+}
+
+// Builds a fully self-contained printable HTML file (own <style>, no dependency on the
+// app's CSS/DOM) and triggers a real file download. This is the reliable path — some
+// mobile/embedded browsers silently block window.print()/window.open(), but a file
+// download always works and can be opened + printed from any browser afterward.
+function downloadStandaloneReport(r, bodyHTML){
+  const doc = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير منطقة ${r.name}</title>
+<style>
+  @page { size: A4 landscape; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin:0; padding:24px; color:#1a1a1a; }
+  .print-btn { display:inline-block; margin-bottom:18px; background:#2541b2; color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:14px; cursor:pointer; font-family:inherit; }
+  @media print { .print-btn { display:none; } body { padding:0; } }
+  .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #2541b2; padding-bottom:12px; margin-bottom:18px; }
+  .header h1 { margin:0; font-size:26px; color:#2541b2; }
+  .header p { margin:4px 0 0; font-size:13px; color:#666; }
+  .meta { font-size:13px; color:#444; text-align:left; }
+  .summary { display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
+  .summary .card { flex:1; min-width:130px; background:#f5f6fa; border:1px solid #e1e3ea; border-radius:10px; padding:10px 14px; }
+  .summary .card .lbl { font-size:11.5px; color:#777; margin-bottom:4px; }
+  .summary .card .val { font-size:19px; font-weight:800; color:#1a1a1a; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { border:1px solid #d8dae0; padding:7px 8px; text-align:center; }
+  th { background:#2541b2; color:#fff; font-weight:700; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  tr:nth-child(even) td { background:#f8f9fb; }
+  tfoot td { background:#eef0f8; font-weight:800; border-top:2px solid #2541b2; }
+  .note { margin-top:14px; font-size:11px; color:#888; }
+</style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">🖨️ طباعة هذه الصفحة</button>
+  ${bodyHTML}
+</body>
+</html>`;
+
+  const blob = new Blob([doc], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'تقرير-منطقة-' + r.name + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function renderBottomPanel(){
+  if(!selected){
+    bottomPanel.classList.remove('show');
+    bottomPanel.innerHTML = '';
+    return;
+  }
+  const r = REGIONS.find(x=>x.id===selected);
+  const branches = getRegionBranches(r.id);
+  bottomPanel.innerHTML = `
+    <div class="bp-head">
+      <h2>منطقة ${r.name} — ملخص الفرص التجارية</h2>
+      <span class="bp-sub">المركز الإداري: ${r.capital}</span>
+    </div>
+    <div class="bp-grid">
+      <div class="bp-card">
+        <div class="bp-icon">﷼</div>
+        <div>
+          <div class="bp-label">متوسط سعر المتر التجاري (تقديري)</div>
+          <div class="bp-value">${fmt(r.priceMin)} – ${fmt(r.priceMax)} <small>ريال / م²</small></div>
+        </div>
+      </div>
+      <div class="bp-card">
+        <div class="bp-icon">🏬</div>
+        <div>
+          <div class="bp-label">عدد الفروع في هذه المنطقة</div>
+          <div class="bp-value">${branches} <small>فرع</small></div>
+        </div>
+      </div>
+    </div>
+    <p class="bp-note">الأسعار تقريبية ومبنية على اتجاهات السوق العامة لأراضٍ تجارية على شوارع رئيسية في مدينة ${r.capital} وضواحيها، وتتفاوت بشكل كبير حسب الموقع الدقيق وعرض الشارع؛ يُنصح بتقييم عقاري رسمي قبل أي قرار استثماري.</p>
+    <div class="bp-links">
+      <a class="bp-link" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('أفضل مكاتب عقارية في '+r.capital)}">🔎 مكاتب عقار في ${r.capital} <span class="arrow">←</span></a>
+      <a class="bp-link" target="_blank" rel="noopener" href="https://www.bayut.sa/ar/%D8%A7%D9%84%D8%B4%D8%B1%D9%83%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9/">🏢 دليل بيوت العقاري</a>
+      <a class="bp-link" target="_blank" rel="noopener" href="https://sa.aqar.fm/%D8%A3%D8%B1%D8%A7%D8%B6%D9%8A-%D9%84%D9%84%D8%A8%D9%8A%D8%B9/${encodeURIComponent(r.capital)}">📍 أراضٍ للبيع في ${r.capital}</a>
+    </div>
+    <p class="bp-note">لم نُدرج أسماء مكاتب أو أرقام تواصل محددة لأنها تتغير كثيرًا ولا يمكن التحقق من دقتها لكل مدينة؛ الروابط أعلاه تفتح نتائج حية ومحدثة بدل بيانات قد تصبح قديمة أو غير صحيحة.</p>
+  `;
+  bottomPanel.classList.add('show');
+}
+
+function selectRegion(id){
+  selected = (selected===id) ? null : id;
+  buildMap();
+  renderPanel();
+  renderBottomPanel();
+}
+
+loadState();
+</script>
+</body>
+</html>
